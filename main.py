@@ -1,139 +1,27 @@
-# Algo HW 4
-# Robert Liedka, Bryan Quinn, Brendan Jones
+"""
+CSCI-261 (Algorithms) HW 4
+Authors: Robert Liedka, Bryan Quinn, Brendan Jones
+Purpose: To use Dynamic Programming to solve for pretty printing
+"""
 import sys
 
-M = 10  ## Max number of chars per line
+# Max number of chars per line
+M = 70
 
-
-# If a given line contains words i through j and leave exactly one space between words
-# the number of extra space chars at the eol is: M - j + i - sum(j, k=i)lk
-def DoPrettyPrint(fromFileName, toFile):
-    with open(fromFileName) as fromFile:
-        content = fromFile.read()
-    newString = ""
-    charOffset = 0
-
-    while True:
-        spaces = 0
-        if charOffset + M < len(content):
-            currentLine = content[charOffset: charOffset + M]
-            while currentLine[len(currentLine) - spaces - 1] != " ":  # walk back
-                spaces += 1
-            newString += currentLine[0:M - spaces - 1] + (" " * spaces) + "\n"
-            charOffset += M - spaces
-        else:
-            currentLine = content[charOffset:]
-            spaces = M - len(currentLine)
-            newString += currentLine + (" " * spaces) + "\n"
-            break
-
-    print(newString)
-
-
-def recursive_pretty_print(from_file_name, to_file_name):
-    pass
-
-
-def num_extra_spaces_in_line(words, starting_index, ending_index):
-    """
-    Given a list of words, a starting index, and and ending index,
-    this function returns how many extra spaces there would be in a
-    line if all the words from the words[starting_index] to words[ending_index]
-    :param words: The list of words
-    :param starting_index: The starting index of words to put on the line
-    :param ending_index: The ending index of words to put on the line
-    :return: The number of extra spaces there would be on a line
-    """
-    words_to_put_on_line = words[starting_index:ending_index + 1]
-    num_characters_in_line = num_characters_in_words(words_to_put_on_line)
-
-    num_spaces_between_words = (ending_index - starting_index)
-    return M - num_spaces_between_words - num_characters_in_line
-
-
-def num_characters_in_words(words):
-    """
-    Given a list of words, find the total number of characters for all words in words
-    :param words: The list of words to count characters for
-    :return: The total number of characters for all the words in the list words
-    """
-    num_characters = 0
-    for word in words:
-        num_characters += len(word)
-    return num_characters
-
-
-# if __name__ == '__main__':
-#     if (len(sys.argv) != 3):
-#         print("Invalid number of args provided, please provide, read file & write file")
-#     else:
-#         DoPrettyPrint(sys.argv[1], sys.argv[2])
-
-# Example line
-# continuous internationalization integration summation productization
-
-## Tests
-def test_num_characters_in_words():
-    words = ["apple", "banana", "fruit", "bacon"]
-    actual = num_characters_in_words(words)
-    expected = 21
-    passing = actual == expected
-    print("Num characters in words works? " + str(passing))
-    if not passing:
-        print("Expected " + str(expected))
-        print("Actual " + str(actual))
-
-def test_num_extra_spaces_in_line():
-    words = ["apple", "banana", "fruit", "bacon"]
-    actual = num_extra_spaces_in_line(words, 0, len(words) - 1)
-    expected = M - len("apple banana fruit bacon")
-    passing = actual == expected
-    print("Num extra spaces in line works? " + str(passing))
-    if not passing:
-        print("Expected " + str(expected))
-        print("Actual " + str(actual))
-
-def test_num_extra_spaces_in_line_indexed():
-    words = ["apple", "banana", "fruit", "bacon"]
-    actual = num_extra_spaces_in_line(words, 1, 2)
-    expected = M - len("banana fruit")
-    passing = actual == expected
-    print("Num extra spaces in line works? " + str(passing))
-    if not passing:
-        print("Expected " + str(expected))
-        print("Actual " + str(actual))
-
-def test_num_extra_spaces_in_line_single_word():
-    words = ["apple", "banana", "fruit", "bacon"]
-    actual = num_extra_spaces_in_line(words, 1, 1)
-    expected = M - len("banana")
-    passing = actual == expected
-    print("Num extra spaces in line works? " + str(passing))
-    if not passing:
-        print("Expected " + str(expected))
-        print("Actual " + str(actual))
-
-#test_num_characters_in_words()
-test_num_extra_spaces_in_line_single_word()
-test_num_extra_spaces_in_line()
-test_num_extra_spaces_in_line_indexed()
-# With [apple, banana, fruit, bacon] we get this line:
-#apple banana fruit bacon
-#123456789123456789212345
-# This has 25 characters in it
-# Max characters is 90
-# 90 - 25 = 65
-# The definition of the function is giving 66
-# 90 - 4 + 1 - 21
-# 87 - 21 = 66
-
+# Used for impossible placements on the cost matrix
 infinity = float('inf')
 
 
-
 def build_cost_matrix(words):
+    """
+    Given a list of words, create the 2D Cost Matrix where
+    the cost is the number of spaces left on a line for a given
+    word to line placement.
+    :param words: The array of words
+    :return: A list of lists (2D Array) representing the costs
+    """
     # Initialize the matrix initially with infinity in each
-    cost_matrix = [[float('inf') for i in range(len(words))] for j in range(len(words))]
+    cost_matrix = [[infinity for i in range(len(words))] for j in range(len(words))]
 
     # Populate the matrix with the cost (if positive) for each potential word placement
     for i in range(0, len(words)):
@@ -153,13 +41,18 @@ def build_cost_matrix(words):
     return cost_matrix
 
 
-def find_result_indexes(words):
+def find_min_cost_results(words):
+    """
+    Helper function used to find the results array needed to traverse
+    the cost matrix
+    :param words: The list of words to use for the cost matrix
+    :return: The results array to use for traversing
+    """
     min_cost = [None] * len(words)
     result = [None] * len(words)
     
     cost_matrix = build_cost_matrix(words)
 
-    
     for i in range(len(words) - 1, -1, -1):
         min_cost[i] = cost_matrix[i][len(words) - 1]
         result[i] = len(words)
@@ -168,12 +61,26 @@ def find_result_indexes(words):
                 if min_cost[i] > min_cost[j] + cost_matrix[i][j - 1]:
                     min_cost[i] = min_cost[j] + cost_matrix[i][j-1]
                     result[i] = j
+    return result
+
+
+def build_pretty_string(words):
+    """
+    Given a list of words, build and return a string that represents
+    the pretty version of the string where pretty is defined as
+    having the minimum amount of spaces at the end of a line where
+    the max line length is 70 characters, and all words are in the string.
+    :param words: The list of words to build a string from
+    :return: The pretty formatted string
+    """
+    min_cost_results = find_min_cost_results(words)
 
     result_string = ""
     line_tracker = 0
     word_tracker = 0
+
     while line_tracker < len(words):
-        line_tracker = result[word_tracker]
+        line_tracker = min_cost_results[word_tracker]
         for i in range(word_tracker, line_tracker):
             result_string += words[i] + " "
         result_string += "\n"
@@ -181,6 +88,26 @@ def find_result_indexes(words):
     return result_string
 
 
+def do_pretty_print(input_file_name, output_file_name):
+    """
+    Read input, grab all words from input, use the pretty
+    string dynamic programming algorithm, then write out
+    the pretty string to the output file name
+    :param input_file_name: The name of the input file
+    :param output_file_name: The namer of the output file
+    :return: None
+    """
+    with open(input_file_name) as f:
+        words = f.read().split()
+
+    pretty_string = build_pretty_string(words)
+
+    with open(output_file_name, "w") as f:
+        f.write(pretty_string)
 
 
-print(find_result_indexes(["apple", "banana", "bacon", "cheese", "cat", "amazing"]))
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print("Invalid number of args provided, please provide, read file & write file")
+    else:
+        do_pretty_print(sys.argv[1], sys.argv[2])
