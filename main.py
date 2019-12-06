@@ -12,6 +12,35 @@ M = 90
 infinity = float('inf')
 
 
+def print_cost_matrix(cost_matrix):
+    """
+    Given a cost matrix, surround the border with i and j and print
+    out the matrix values
+    :param cost_matrix: The 2D array representing a matrix
+    :return: None
+    """
+    print('       ', end='')
+    for i in range(0, len(cost_matrix)):
+        if i < 10:
+            print('j=' + str(i) + '     ', end='')
+        else:
+            print('j=' + str(i) + '    ', end='')
+    print('')
+    for i in range(0, len(cost_matrix)):
+        if i < 10:
+            print('i=' + str(i) + ' ', end='')
+        else:
+            print('i=' + str(i), end='')
+        for j in range(0, len(cost_matrix)):
+            cost = str(cost_matrix[i][j])
+            while len(cost) < 3:
+                cost += " "
+
+            print(" | " + cost + " |", end='')
+        print("")
+    return cost_matrix
+
+
 def build_cost_matrix(words):
     """
     Given a list of words, create the 2D Cost Matrix where
@@ -37,7 +66,7 @@ def build_cost_matrix(words):
             # otherwise, it will remain as infinite value
             if total_new_cost >= 0:
                 cost_matrix[i][j] = total_new_cost
-
+    # print_cost_matrix(cost_matrix)
     return cost_matrix
 
 
@@ -58,7 +87,7 @@ def find_min_cost_results(words):
         result[i] = len(words)
         for j in range(len(words) - 1, i, -1):
             if not(cost_matrix[i][j-1] == infinity):
-                if min_cost[i] > min_cost[j] + cost_matrix[i][j - 1]:
+                if min_cost[i] > min_cost[j] + cost_matrix[i][j-1]:
                     min_cost[i] = min_cost[j] + cost_matrix[i][j-1]
                     result[i] = j
     return result
