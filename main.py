@@ -6,7 +6,7 @@ Purpose: To use Dynamic Programming to solve for pretty printing
 import sys
 
 # Max number of chars per line
-M = 70
+M = 90
 
 # Used for impossible placements on the cost matrix
 infinity = float('inf')
@@ -102,7 +102,7 @@ def do_pretty_print(input_file_name, output_file_name):
 
     pretty_string = build_pretty_string(words)
 
-    with open(output_file_name, "w") as f:
+    with open(output_file_name, 'w') as f:
         f.write(pretty_string)
 
 
